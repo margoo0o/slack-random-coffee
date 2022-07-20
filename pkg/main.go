@@ -24,7 +24,6 @@ func main() {
 	api := slack.New(OAuthToken)
 
 	users := slack_integration.GetUsers(api, channelId)
-
 	groups := group_generation.GenerateGroups(users, GROUP_SIZE)
 
 	attachment := slack.Attachment{
@@ -32,7 +31,6 @@ func main() {
 	}
 
 	message := fmt.Sprintf("Here are the random coffees for the week: \n")
-
 	channelId, timestamp, err := api.PostMessage(
 		channelId,
 		slack.MsgOptionText(message, true),

@@ -3,13 +3,11 @@ package group_generation
 import (
 	"fmt"
 	"math/rand"
-	"strings"
 	"time"
 )
 
-// TODO Exclude the Coffee Bot users
-// U01U2BQ2CSX
 func GenerateGroups(users []string, groupSize int) string {
+	userDefinedGroupSize := groupSize
 	// Seed based on the generated timestamp - without seeding, same pseudorandom sequence is generated
 	rand.Seed(time.Now().UnixNano())
 	// Shuffle order
@@ -33,29 +31,30 @@ func GenerateGroups(users []string, groupSize int) string {
 	}
 
 	// if group <= groupSize / 2, move people into other groups
-	var lastGroup = groups[len(groups)-1]
-	fmt.Println("last group", lastGroup)
-	fmt.Println("got here", len(lastGroup), "     ", groupSize)
-	if len(lastGroup) <= groupSize/2 {
+	lastGroup := groups[len(groups)-1]
+	if len(lastGroup) <= userDefinedGroupSize / 2 {
+		// Round robin approach - 1st person in small group goes to first full group, 2nd goes to 2nd group etc.
 		for i := range lastGroup {
-			groups[i] = append(groups[i], lastGroup[i])
-			fmt.Println("new group", groups[i])
+			appendUser := lastGroup[i]
+			fmt.Println("append user", appendUser)
+			groups[i] = copyAndAppend(groups[i], lastGroup[i])
+			fmt.Println(groups[i])
 		}
-		//finally, remove small group
+		// Finally, pop the last group once all members have been reallocated
 		groups = groups[:len(groups)-1]
 	}
+	fmt.Println("groups")
 	fmt.Println(groups)
 
 	return formatGroups(groups)
 }
 
-func formatGroups(subgroups [][]string) string {
-	groupText := ""
-	for i, subgroup := range subgroups {
-		for j, val := range subgroup {
-			subgroup[j] = fmt.Sprintf(`<@%v>`, val)
-		}
-		groupText += fmt.Sprintln(strings.Join(subgroups[i][:], " \U00002615  "))
-	}
-	return groupText
+// Appending to a slice... yikes!
+// The confusion I had is due to the fact that append both changes the underlying array and returns a new slice (since the length changes).
+// You'd imagine that it copies that backing array, but it doesn't, it just allocates a new slice object that points at it.
+func copyAndAppend(i []string, vals ...string) []string {
+	j := make([]string, len(i), len(i)+len(vals))
+	copy(j, i)
+	return append(j, vals...)
 }
+

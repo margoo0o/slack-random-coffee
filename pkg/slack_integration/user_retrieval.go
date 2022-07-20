@@ -5,13 +5,9 @@ import (
 	"log"
 )
 
-const (
-	COFFEE_BOT_USER_ID = "U01U2BQ2CSX"
-)
+var CoffeeBotUserID = ""
 
-/*
-Get all the users in the channel to allow the pairs to be generated
-*/
+// GetUsers Get all the users in the channel to allow the pairs to be generated/*
 func GetUsers(api *slack.Client, channelId string) []string {
 	// https://slack.com/api/conversations.info
 	// users, cursor, err
@@ -24,12 +20,22 @@ func GetUsers(api *slack.Client, channelId string) []string {
 		log.Fatalf("%s\n", err)
 	}
 
-	return cleanData(users)
+	setBotUserId(api)
+
+	return cleanData(api, users)
 }
 
-func cleanData(users []string) []string {
+func setBotUserId(api *slack.Client) {
+	authResult, err := api.AuthTest()
+	if err != nil {
+		log.Fatalf("%s\n", err)
+	}
+	CoffeeBotUserID = authResult.UserID
+}
+
+func cleanData(api *slack.Client, users []string) []string {
 	// Remove the coffee bot user - should not be included in list of users
-	removeUser(users, COFFEE_BOT_USER_ID)
+	removeUser(users, CoffeeBotUserID)
 
 	// Remove duplicates
 	return unique(users)
