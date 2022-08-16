@@ -33,7 +33,7 @@ func main() {
 	message := fmt.Sprintf("Here are the random coffees for the week: \n")
 	channelId, timestamp, err := api.PostMessage(
 		channelId,
-		slack.MsgOptionText(message, true),
+		slack.MsgOptionText(message, false),
 		slack.MsgOptionAttachments(attachment),
 		slack.MsgOptionAsUser(true),
 	)
